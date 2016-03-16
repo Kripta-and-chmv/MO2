@@ -64,5 +64,9 @@ private:
  
 
 public:
+	void smthng()
+	{
+
+	}
 
 };
