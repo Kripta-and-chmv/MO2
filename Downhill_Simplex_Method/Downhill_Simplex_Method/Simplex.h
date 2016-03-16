@@ -21,7 +21,15 @@ Point operator+ (const Point& a, const Point& b)
 {
 	return Point(a.x + b.x, a.y + b.y);
 }
+Point operator- (const Point& a, const Point& b)
+{
+	return Point(a.x - b.x, a.y - b.y);
+}
 Point operator* (const Point&a, double b)
+{
+	return Point(a.x*b, a.y*b);
+}
+Point operator* (double b, const Point&a)
 {
 	return Point(a.x*b, a.y*b);
 }
@@ -40,10 +48,14 @@ class Simplex
 {
 private:
 	double _a, _y, _b; //coefficients for Reflceion, Expansion and Contraction
-	double _k;//scaled factor
+	double _k;//scaled factor 
 	double _EPS;
+	//тот самый многоугольник. изначально, I элемент - начальная точка, 
+	//II и III элементы - построенные от нач точки.
 	vector<Point> _polygon;
+	
 	double _fMin, _fMax;
+	int _indMax, _indMin;
 	Point _center;
 	
 	void Read(string path)
@@ -65,14 +77,16 @@ private:
 		int d1 = 3, d2 = 2;
 		return (A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2)));
 	}
-	void Reflecion()
+	void Reflection()
 	{
+		Point reflect = _center + _a * (_center - _polygon[_indMax]);
+		_polygon.push_back(reflect);
 	}
 	void Expansion()
 	{
 		
 	}
-	void Contracion()
+	void Contraction()
 	{
 		
 	}
@@ -88,7 +102,6 @@ private:
 	}
 	void FirstStep()
 	{
-		int indMax, indMin;
 		vector<double> result;
 		_fMax = _fMin = result[0];
 
@@ -102,18 +115,18 @@ private:
 			if (result[i] > _fMax)
 			{
 				_fMax = result[i];
-				indMax = i;
+				_indMax = i;
 			}
 			if (result[i] < _fMin)
 			{
 				_fMin = result[i];
-				indMin = i;
+				_indMin = i;
 			}
 		}
 		
 		for (int i = 0; i < result.size(); i++)
 		{
-			if (i != indMax)
+			if (i != _indMax)
 				_center += _polygon[i] / (_polygon.size() - 2);
 		}
 
@@ -134,14 +147,15 @@ private:
 
 	void ThirdStep()
 	{
-		
+		Reflection();
+
 	}
 
 public:
-	void DoAlgorithm()
+	Point DoAlgorithm()
 	{
 		FirstStep();
-		if (SecondStep()) return; else ThirdStep();
+		if (SecondStep()) return _center; else ThirdStep();
 
 	}
 
