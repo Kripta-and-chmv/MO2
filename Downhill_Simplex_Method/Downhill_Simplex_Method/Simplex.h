@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -10,7 +12,8 @@ struct Point
 {
 	double x;
 	double y;
-	Point(double x,double y) : x(x),y(y) {}
+	Point(double x, double y) : x(x), y(y) {};
+	Point() {};
 
 };
 
@@ -22,15 +25,37 @@ Point operator* (const Point&a, double b)
 {
 	return Point(a.x*b, a.y*b);
 }
+Point operator/ (const Point& a, double b)
+{
+	return Point(a.x / b, a.y / b);
+}
+Point& operator+= (Point&a, const Point &b)
+{
+	a.x += b.x;
+	a.y += b.y;
+	return a;
+}
 
 class Simplex
 {
 private:
-	double a, y, b; //coefficients for Reflceion, Expansion and Contraction
-	double k;//scaled factor
-	vector<Point> polygon;
-	Point fMin, fMax;
+	double _a, _y, _b; //coefficients for Reflceion, Expansion and Contraction
+	double _k;//scaled factor
+	double _EPS;
+	vector<Point> _polygon;
+	double _fMin, _fMax;
+	Point _center;
 	
+	void Read(string path)
+	{
+		ifstream read(path, ios_base::in);
+		Point buf;
+		read >> buf.x, buf.y, _a, _y, _b, _k, _EPS;
+
+		_polygon.push_back(buf);
+		read.close();
+	}
+
 	double Function(Point p)
 	{
 		int A1 = 1, A2 = 3;
@@ -58,14 +83,50 @@ private:
 
 	void CreateSimplex()
 	{
-		polygon[1] = polygon[0] + Point{1, 0}*k;
-		polygon[2] = polygon[0] + Point{ 0, 1 }*k;
+		_polygon[1] = _polygon[0] + Point{1, 0}*_k;
+		_polygon[2] = _polygon[0] + Point{ 0, 1 }*_k;
 	}
- 
+	void FirstStep()
+	{
+		int indMax, indMin;
+		vector<double> result;
+		_fMax = _fMin = result[0];
+
+		for each (Point p in _polygon)
+		{
+			result.push_back(Function(p));
+		}
+		
+		for (int i = 0; i < result.size(); i++)
+		{
+			if (result[i] > _fMax)
+			{
+				fMax = result[i];
+				indMax = i;
+			}
+			if (result[i] < _fMin)
+			{
+				fMin = result[i];
+				indMin = i;
+			}
+		}
+		
+		for (int i = 0; i < result.size; i++)
+		{
+			if (i != indMax)
+				_center += _polygon[i] / (_polygon.size() - 2);
+		}
+
+	}
+	void SecondStep()
+	{
+
+	}
 
 public:
-	void smthng()
+	void DoAlgorithm()
 	{
+		FirstStep();
 
 	}
 
