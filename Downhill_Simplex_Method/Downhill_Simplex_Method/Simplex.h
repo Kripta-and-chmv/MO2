@@ -101,32 +101,47 @@ private:
 		{
 			if (result[i] > _fMax)
 			{
-				fMax = result[i];
+				_fMax = result[i];
 				indMax = i;
 			}
 			if (result[i] < _fMin)
 			{
-				fMin = result[i];
+				_fMin = result[i];
 				indMin = i;
 			}
 		}
 		
-		for (int i = 0; i < result.size; i++)
+		for (int i = 0; i < result.size(); i++)
 		{
 			if (i != indMax)
 				_center += _polygon[i] / (_polygon.size() - 2);
 		}
 
 	}
-	void SecondStep()
+	bool SecondStep()
 	{
+		double summ=0, result=0;
+		for (int i = 0; i < _polygon.size(); i++)
+			summ += pow(Function(_polygon[i]) - Function(_center), 2);
 
+		result = sqrt(summ / _polygon.size());
+
+		if (result <= _EPS)
+			return true;
+		else
+			return false;
+	}
+
+	void ThirdStep()
+	{
+		
 	}
 
 public:
 	void DoAlgorithm()
 	{
 		FirstStep();
+		if (SecondStep()) return; else ThirdStep();
 
 	}
 
