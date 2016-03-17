@@ -178,13 +178,18 @@ private:
 	}
 
 public:
-	Point DoAlgorithm()
+	Point DoAlgorithm(double &k)
 	{
 		CreateSimplex();
 		while (true)
 		{
 			FirstStep();
-			if (SecondStep()) return _center; else ThirdStep();
+			if (SecondStep())
+			{
+				k = Function(_center);
+				return _center;
+			}
+			else ThirdStep();
 			FourthStep();
 		}
 	}

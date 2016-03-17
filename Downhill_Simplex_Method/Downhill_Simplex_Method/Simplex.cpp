@@ -5,9 +5,10 @@ void main()
 	Point result;
 	Simplex A;
 	A.Read(path);
-	result = A.DoAlgorithm();
+	double k;
+	result = A.DoAlgorithm(k);
 
-	cout << result.x << "  " << result.y << "\n";
+	cout << k<< "  "<< result.x << "  " << result.y << "\n";
 	
 	return;
 }
