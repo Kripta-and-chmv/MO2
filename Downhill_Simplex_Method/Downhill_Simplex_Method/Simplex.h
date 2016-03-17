@@ -56,17 +56,9 @@ private:
 	
 	double _fMin, _fMax;
 	int _indMax, _indMin;
-	Point _center;
+	Point _center, _expansion, _reflection, _contraction;
 	
-	void Read(string path)
-	{
-		ifstream read(path, ios_base::in);
-		Point buf;
-		read >> buf.x, buf.y, _a, _y, _b, _k, _EPS;
-
-		_polygon.push_back(buf);
-		read.close();
-	}
+	
 
 	double Function(Point p)
 	{
@@ -79,25 +71,29 @@ private:
 	}
 	void Reflection()
 	{
-		Point reflect = _center + _a * (_center - _polygon[_indMax]);
-		_polygon.push_back(reflect);
+		_reflection = _center + _a * (_center - _polygon[_indMax]);
 	}
 	void Expansion()
 	{
-		
+		_expansion = _center + _y*(_reflection - _center);
 	}
 	void Contraction()
 	{
-		
+		_contraction = _center + _b*(_polygon[_indMax] - _center);
 	}
 	void Reduction()
 	{
-		
+		vector<Point> newPolygon;
+		newPolygon.push_back(_polygon[_indMin]);
+
+		newPolygon.push_back(newPolygon[0]+0.5*(_polygon[1]- newPolygon[0]));
+		newPolygon.push_back(newPolygon[0] + 0.5*(_polygon[2] - newPolygon[0]));
+		_polygon = newPolygon;
 	}
 
 	void CreateSimplex()
 	{
-		_polygon[1] = _polygon[0] + Point{1, 0}*_k;
+		_polygon[1] = _polygon[0] + Point{ 1, 0 }*_k;
 		_polygon[2] = _polygon[0] + Point{ 0, 1 }*_k;
 	}
 	void FirstStep()
@@ -109,7 +105,7 @@ private:
 		{
 			result.push_back(Function(p));
 		}
-		
+
 		for (int i = 0; i < result.size(); i++)
 		{
 			if (result[i] > _fMax)
@@ -123,7 +119,7 @@ private:
 				_indMin = i;
 			}
 		}
-		
+
 		for (int i = 0; i < result.size(); i++)
 		{
 			if (i != _indMax)
@@ -133,7 +129,7 @@ private:
 	}
 	bool SecondStep()
 	{
-		double summ=0, result=0;
+		double summ = 0, result = 0;
 		for (int i = 0; i < _polygon.size(); i++)
 			summ += pow(Function(_polygon[i]) - Function(_center), 2);
 
@@ -148,15 +144,56 @@ private:
 	void ThirdStep()
 	{
 		Reflection();
+	}
 
+	void FourthStep()
+	{
+		if (Function(_reflection) < Function(_polygon[_indMin]))
+		{
+			Expansion();
+			if (Function(_expansion) < Function(_reflection))
+				_polygon[_indMax] = _expansion;
+			else
+				_polygon[_indMax] = _reflection;
+			return;
+		}
+		if ((Function(_polygon[_indMin]) <= Function(_reflection)) && (Function(_reflection) < Function(_polygon[_indMax])))
+		{
+			Contraction();
+			if (Function(_contraction) < Function(_reflection))
+			{
+				_polygon[_indMax] = _contraction;
+			}
+			else
+			{
+				_polygon[_indMax] = _reflection;
+			}
+			return;
+		}
+		if (Function(_reflection) >= Function(_polygon[_indMax]))
+		{
+			Reduction();
+		}
 	}
 
 public:
 	Point DoAlgorithm()
 	{
-		FirstStep();
-		if (SecondStep()) return _center; else ThirdStep();
+		while (true)
+		{
+			FirstStep();
+			if (SecondStep()) return _center; else ThirdStep();
+			FourthStep();
+		}
+	}
+	void Read(string path)
+	{
+		ifstream read(path, ios_base::in);
+		Point buf;
+		read >> buf.x, buf.y, _a, _y, _b, _k, _EPS;
 
+		_polygon.push_back(buf);
+		read.close();
 	}
 
 };
