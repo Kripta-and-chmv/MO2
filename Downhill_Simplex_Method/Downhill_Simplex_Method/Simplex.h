@@ -93,18 +93,19 @@ private:
 
 	void CreateSimplex()
 	{
-		_polygon[1] = _polygon[0] + Point{ 1, 0 }*_k;
-		_polygon[2] = _polygon[0] + Point{ 0, 1 }*_k;
+		_polygon.push_back(_polygon[0] + Point{ 1, 0 }*_k);
+		_polygon.push_back(_polygon[0] + Point{ 0, 1 }*_k);
 	}
 	void FirstStep()
 	{
 		vector<double> result;
-		_fMax = _fMin = result[0];
 
 		for each (Point p in _polygon)
 		{
 			result.push_back(Function(p));
 		}
+		
+		_fMax = _fMin = result[0];
 
 		for (int i = 0; i < result.size(); i++)
 		{
@@ -123,7 +124,7 @@ private:
 		for (int i = 0; i < result.size(); i++)
 		{
 			if (i != _indMax)
-				_center += _polygon[i] / (_polygon.size() - 2);
+				_center += _polygon[i] / (_polygon.size() - 1);
 		}
 
 	}
@@ -179,6 +180,7 @@ private:
 public:
 	Point DoAlgorithm()
 	{
+		CreateSimplex();
 		while (true)
 		{
 			FirstStep();
@@ -190,7 +192,7 @@ public:
 	{
 		ifstream read(path, ios_base::in);
 		Point buf;
-		read >> buf.x, buf.y, _a, _y, _b, _k, _EPS;
+		read >> buf.x>> buf.y>>_a>>_y>>_b>>_k>> _EPS;
 
 		_polygon.push_back(buf);
 		read.close();
