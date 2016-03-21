@@ -67,7 +67,8 @@ private:
 		int b1 = 3, b2 = 1;
 		int c1 = 2, c2 = 1;
 		int d1 = 3, d2 = 2;
-		return (A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2)));
+		//return (A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2)));
+		return 100 * pow((p.y - pow(p.x, 2)), 2) + pow((1 - p.x), 2);
 	}
 	void Reflection()
 	{
