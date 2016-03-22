@@ -110,7 +110,7 @@ private:
 		_polygon.push_back(Point(_polygon[0].x + d1, _polygon[0].x + d2));
 		_polygon.push_back(Point(_polygon[0].x + d2, _polygon[0].x + d1));
 	}
-	void FirstStep()
+	void SearchMinMax()
 	{
 		vector<double> result;
 
@@ -142,7 +142,7 @@ private:
 		}
 
 	}
-	bool SecondStep()
+	bool Exit()
 	{
 		double summ = 0, result = 0;
 		for (int i = 0; i < _polygon.size(); i++)
@@ -163,19 +163,22 @@ private:
 
 	void FourthStep()
 	{
-		if (Function(_reflection) < Function(_polygon[_indMin]))
+		double fReflect = Function(_reflection);
+
+		if (fReflect < Function(_polygon[_indMin]))
 		{
 			Expansion();
-			if (Function(_expansion) < Function(_reflection))
+			if (Function(_expansion) < fReflect)
 				_polygon[_indMax] = _expansion;
 			else
 				_polygon[_indMax] = _reflection;
 			return;
 		}
-		if ((Function(_polygon[_indMin]) <= Function(_reflection)) && (Function(_reflection) < Function(_polygon[_indMax])))
+
+		if ((Function(_polygon[_indMin]) <= fReflect) && (fReflect < Function(_polygon[_indMax])))
 		{
 			Contraction();
-			if (Function(_contraction) < Function(_reflection))
+			if (Function(_contraction) < fReflect)
 			{
 				_polygon[_indMax] = _contraction;
 			}
@@ -185,9 +188,10 @@ private:
 			}
 			return;
 		}
-		if (Function(_reflection) >= Function(_polygon[_indMax]))
+		if (fReflect >= Function(_polygon[_indMax]))
 		{
 			Reduction();
+			return;
 		}
 	}
 
@@ -197,14 +201,35 @@ public:
 		CreateSimplex();
 		while (true)
 		{
-			FirstStep();
-			if (SecondStep())
+			SearchMinMax();
+			double fReflect = Reflection();
+			if (fReflect >= Function(_polygon[_indMax]))
 			{
-				k = Function(_center);
-				return _center;
+				Reduction();
+
+				if (Exit())
+				{
+					k = Function(_center);
+					return _center;
+				}
+				continue;
 			}
-			else ThirdStep();
-			FourthStep();
+			if (fReflect < Function(_polygon[_indMin]))
+			{
+				Expansion();
+				if (Function(_expansion) < Function(_polygon[_indMin]))
+					_polygon[_indMin] = _expansion;
+				else
+					_polygon[_indMin] = _reflection;
+				continue;
+			}
+			if ((Function(_polygon[_indMin]) <= fReflect) && (fReflect < Function(_polygon[_indMax])))
+			{
+				Contraction();
+				_polygon[_indMax] = _contraction;
+				continue;
+			}
+
 		}
 	}
 	void Read(string path)
