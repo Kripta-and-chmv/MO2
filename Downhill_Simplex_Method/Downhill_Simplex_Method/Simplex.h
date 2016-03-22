@@ -56,6 +56,7 @@ private:
 	
 	double _fMin, _fMax;
 	int _indMax, _indMin;
+	int n = 2; //размерность функции
 	Point _center, _expansion, _reflection, _contraction;
 	
 	
@@ -70,32 +71,44 @@ private:
 		//return (A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2)));
 		return 100 * pow((p.y - pow(p.x, 2)), 2) + pow((1 - p.x), 2);
 	}
-	void Reflection()
+	double Reflection()
 	{
 		_reflection = _center + _a * (_center - _polygon[_indMax]);
+		return Function(_reflection);
 	}
-	void Expansion()
+	double Expansion()
 	{
 		_expansion = _center + _y*(_reflection - _center);
+		return Function(_expansion);
 	}
-	void Contraction()
+	double Contraction()
 	{
 		_contraction = _center + _b*(_polygon[_indMax] - _center);
+		return Function(_contraction);
 	}
 	void Reduction()
 	{
 		vector<Point> newPolygon;
 		newPolygon.push_back(_polygon[_indMin]);
 
-		newPolygon.push_back(newPolygon[0]+0.5*(_polygon[1]- newPolygon[0]));
-		newPolygon.push_back(newPolygon[0] + 0.5*(_polygon[2] - newPolygon[0]));
+		for (int i = 0; i < _polygon.size(); i++)
+		{
+			if (i!=_indMin)
+				newPolygon.push_back(newPolygon[0] + 0.5*(_polygon[1] - newPolygon[0]));
+		}
+		//newPolygon.push_back(newPolygon[0]+0.5*(_polygon[1]- newPolygon[0]));
+		//newPolygon.push_back(newPolygon[0] + 0.5*(_polygon[2] - newPolygon[0]));
 		_polygon = newPolygon;
 	}
 
 	void CreateSimplex()
 	{
-		_polygon.push_back(_polygon[0] + Point{ 1, 0 }*_k);
-		_polygon.push_back(_polygon[0] + Point{ 0, 1 }*_k);
+		//_polygon.push_back(_polygon[0] + Point{ 1, 0 }*_k);
+		//_polygon.push_back(_polygon[0] + Point{ 0, 1 }*_k);
+		double d1 = ((sqrt(n + 1) + n - 1) / (n*sqrt(2)))*_a;
+		double d2 = ((sqrt(n + 1) - 1) / (n*sqrt(2)))*_a;
+		_polygon.push_back(Point(_polygon[0].x + d1, _polygon[0].x + d2));
+		_polygon.push_back(Point(_polygon[0].x + d2, _polygon[0].x + d1));
 	}
 	void FirstStep()
 	{
