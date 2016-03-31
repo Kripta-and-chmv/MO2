@@ -48,7 +48,6 @@ class Simplex
 {
 private:
 	double _a, _y, _b; //coefficients for Reflceion, Expansion and Contraction
-	double _k;//scaled factor 
 	double _EPS;
 	//тот самый многоугольник. изначально, I элемент - начальная точка, 
 	//II и III элементы - построенные от нач точки.
@@ -63,28 +62,30 @@ private:
 
 	double Function(Point p)
 	{
-		int A1 = 1, A2 = 3;
-		int a1 = 2, a2 = 1;
-		int b1 = 3, b2 = 1;
-		int c1 = 2, c2 = 1;
-		int d1 = 3, d2 = 2;
+		//int A1 = 1, A2 = 3;
+		//int a1 = 2, a2 = 1;
+		//int b1 = 3, b2 = 1;
+		//int c1 = 2, c2 = 1;
+		//int d1 = 3, d2 = 2;
 		//return (A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2)));
 		return 100 * pow((p.y - pow(p.x, 2)), 2) + pow((1 - p.x), 2);
+		//return (4 * pow((p.x - 5), 2)) + pow((p.y - 6), 2);
+		//return 2 * pow(p.x, 2) + p.x*p.y + pow(p.y, 2);
 	}
 	double Reflection()
 	{
 		
-		_reflection = (1 + _a)*_center - _a*_polygon[_indMax];
+		_reflection = _center+_a*(_center-_polygon[_indMax]);
 		return Function(_reflection);
 	}
 	double Expansion()
 	{
-		_expansion = (1 - _y)*_center+_y*_reflection;
+		_expansion = _center+ _y*(_reflection-_center);
 		return Function(_expansion);
 	}
 	double Contraction()
 	{
-		_contraction = _b*_polygon[_indMax] + (1 - _b)*_center;
+		_contraction = _center + _b*(_polygon[_indMax]-_center);
 		return Function(_contraction);
 	}
 	void Reduction()
@@ -101,17 +102,9 @@ private:
 		_polygon = newPolygon;
 	}
 
-	void CreateSimplex()
-	{
-		_polygon.push_back(_polygon[0] + Point{ 1, 0 }*_k);
-		_polygon.push_back(_polygon[0] + Point{ 0, 1 }*_k);
-		/*double d1 = ((sqrt(n + 1) + n - 1) / (n*sqrt(2)))*_k;
-		double d2 = ((sqrt(n + 1) - 1) / (n*sqrt(2)))*_k;
-		_polygon.push_back(Point(_polygon[0].x + d1, _polygon[0].x + d2));
-		_polygon.push_back(Point(_polygon[0].x + d2, _polygon[0].x + d1));*/
-	}
 	void Sort()
 	{
+		_center = Point(0, 0);
 		vector<double> result;
 
 		for each (Point p in _polygon)
@@ -124,12 +117,12 @@ private:
 
 		for (int i = 0; i < result.size(); i++)
 		{
-			if (result[i] > fMax)
+			if (result[i] >= fMax)
 			{
 				fMax = result[i];
 				_indMax = i;
 			}
-			if (result[i] < fMin)
+			if (result[i] <= fMin)
 			{
 				fMin = result[i];
 				_indMin = i;
@@ -140,7 +133,7 @@ private:
 		{
 			if (i != _indMax)
 				_center += _polygon[i] / (_polygon.size() - 1);
-			if ((i != _indMax) && (i != _indMid))//находим среднюю точку
+			if ((i != _indMax) && (i != _indMin))//находим среднюю точку
 				_indMid = i;
 		}
 
@@ -162,77 +155,47 @@ private:
 public:
 	Point DoAlgorithm(double &k)
 	{
-		CreateSimplex();
+		int kk = -1;
 		#pragma region Cycle
 				while (true)
 				{
+					kk++;
 					Sort();
+					if (Exit())
+						break;
+
 					double fReflect = Reflection();
 					/////////////
 					if (fReflect < Function(_polygon[_indMin]))
 					{
 						Expansion();
-						if (Function(_expansion) < fReflect)
+						if (Function(_expansion) < Function(_polygon[_indMin]))
 							_polygon[_indMax] = _expansion;
 						else
 							_polygon[_indMax] = _reflection;
-						if (Exit())
-							break;
-						else
-							continue;
-					}
-					////////////
-					if((fReflect>Function(_polygon[_indMin]))&&(fReflect<Function(_polygon[_indMid])))
-					{
-						_polygon[_indMax] = _reflection;
-						if (Exit())
-							break;
-						else
+				
 							continue;
 					}
 					////////////
 					if((fReflect>Function(_polygon[_indMid]))&&(fReflect<Function(_polygon[_indMax])))
 					{
-						swap(_polygon[_indMax], _reflection);
 						Contraction();
-						if(Function(_contraction)<Function(_polygon[_indMax]))
-						{
-							_polygon[_indMax] = _contraction;
-							if (Exit())
-								break;
-							else
-								continue;
-						}
-						else
-						{
-							Reduction();
-							if (Exit())
-								break;
-							else
-								continue;
-						}
+						_polygon[_indMax] = _contraction;
+						continue;
 					}
-					////////////
+					//////////////
+					if(fReflect>Function(_polygon[_indMin])&&(fReflect<=Function(_polygon[_indMid])))
+					{
+						_polygon[_indMax] = _reflection;
+						continue;
+					}
+					/////////////////
 					if(fReflect>Function(_polygon[_indMax]))
 					{
-						Contraction();
-						if (Function(_contraction)<Function(_polygon[_indMax]))
-						{
-							_polygon[_indMax] = _contraction;
-							if (Exit())
-								break;
-							else
-								continue;
-						}
-						else
-						{
-							Reduction();
-							if (Exit())
-								break;
-							else
-								continue;
-						}
+						Reduction();
+						continue;
 					}
+				
 				}
 		#pragma endregion 
 		Sort();
@@ -242,10 +205,13 @@ public:
 	void Read(string path)
 	{
 		ifstream read(path, ios_base::in);
-		Point buf;
-		read >> buf.x>> buf.y>>_a>>_y>>_b>>_k>> _EPS;
+		Point p1, p2, p3;
+		read >> p1.x >> p1.y >> p2.x >> p2.y >> p3.x >> p3.y >> _a >> _b >> _y >> _EPS;
 
-		_polygon.push_back(buf);
+		_polygon.push_back(p1);
+		_polygon.push_back(p2);
+		_polygon.push_back(p3);
+
 		read.close();
 	}
 
