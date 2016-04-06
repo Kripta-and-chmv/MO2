@@ -54,7 +54,7 @@ private:
 	vector<Point> _polygon;
 	
 	
-	int _indMax, _indMin, _indMid;
+	int _indMax, _indMin, _indMid, _fMin, _fMax, _fMid;
 	int n = 2; //размерность функции
 	Point _center, _expansion, _reflection, _contraction;
 	
@@ -62,6 +62,7 @@ private:
 
 	double Function(Point p)
 	{
+		functionCount++;
 		//int A1 = 1, A2 = 3;
 		//int a1 = 2, a2 = 1;
 		//int b1 = 3, b2 = 1;
@@ -78,15 +79,13 @@ private:
 		_reflection = _center+_a*(_center-_polygon[_indMax]);
 		return Function(_reflection);
 	}
-	double Expansion()
+	void Expansion()
 	{
 		_expansion = _center+ _y*(_reflection-_center);
-		return Function(_expansion);
 	}
-	double Contraction()
+	void Contraction()
 	{
 		_contraction = _center + _b*(_polygon[_indMax]-_center);
-		return Function(_contraction);
 	}
 	void Reduction()
 	{
@@ -136,13 +135,16 @@ private:
 			if ((i != _indMax) && (i != _indMin))//находим среднюю точку
 				_indMid = i;
 		}
+		_fMin = result[_indMin];
+		_fMax = result[_indMax];
+		_fMid = result[_indMid];
 
 	}
 	bool Exit()
 	{
-		double summ = 0, result = 0;
+		double summ = 0, result = 0, bufCenter= Function(_center);
 		for (int i = 0; i < _polygon.size(); i++)
-			summ += pow(Function(_polygon[i]) - Function(_center), 2);
+			summ += pow(Function(_polygon[i]) - bufCenter, 2);
 
 		result = sqrt(summ / _polygon.size());
 
@@ -153,12 +155,14 @@ private:
 	}
 
 public:
+	int functionCount = 0;
 	Point DoAlgorithm(double &k)
 	{
 		int kk = -1;
 		#pragma region Cycle
 				while (true)
 				{
+					
 					kk++;
 					Sort();
 					if (Exit())
@@ -166,10 +170,10 @@ public:
 
 					double fReflect = Reflection();
 					/////////////
-					if (fReflect < Function(_polygon[_indMin]))
+					if (fReflect < _fMin)
 					{
 						Expansion();
-						if (Function(_expansion) < Function(_polygon[_indMin]))
+						if (Function(_expansion) < _fMin)
 							_polygon[_indMax] = _expansion;
 						else
 							_polygon[_indMax] = _reflection;
@@ -177,20 +181,20 @@ public:
 							continue;
 					}
 					////////////
-					if((fReflect>Function(_polygon[_indMid]))&&(fReflect<Function(_polygon[_indMax])))
+					if((fReflect>_fMid)&&(fReflect<_fMax))
 					{
 						Contraction();
 						_polygon[_indMax] = _contraction;
 						continue;
 					}
 					//////////////
-					if(fReflect>Function(_polygon[_indMin])&&(fReflect<=Function(_polygon[_indMid])))
+					if((fReflect>_fMin) &&(fReflect<= _fMid))
 					{
 						_polygon[_indMax] = _reflection;
 						continue;
 					}
 					/////////////////
-					if(fReflect>Function(_polygon[_indMax]))
+					if(fReflect>_fMax)
 					{
 						Reduction();
 						continue;
@@ -199,7 +203,7 @@ public:
 				}
 		#pragma endregion 
 		Sort();
-		k = Function(_polygon[_indMin]);
+		k = _fMin;
 		return _polygon[_indMin];
 	}
 	void Read(string path)
