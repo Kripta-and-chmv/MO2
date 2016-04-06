@@ -8,7 +8,7 @@ void main()
 	double k;
 	result = A.DoAlgorithm(k);
 
-	cout << k<< "  "<< result.x << "  " << result.y << "\n";
+	cout << k<< "  "<< result.x << "  " << result.y << "\n" << A.functionCount;
 	
 	return;
 }
