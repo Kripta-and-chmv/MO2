@@ -54,7 +54,7 @@ private:
 	vector<Point> _polygon;
 	
 	
-	int _indMax, _indMin, _indMid, _fMin, _fMax, _fMid;
+	int _indMax, _indMin, _indMid, _fMin=0, _fMax=0, _fMid=0;
 	int n = 2; //размерность функции
 	Point _center, _expansion, _reflection, _contraction;
 	
@@ -63,12 +63,12 @@ private:
 	double Function(Point p)
 	{
 		functionCount++;
-		//int A1 = 1, A2 = 3;
-		//int a1 = 2, a2 = 1;
-		//int b1 = 3, b2 = 1;
-		//int c1 = 2, c2 = 1;
-		//int d1 = 3, d2 = 2;
-		//return (A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2)));
+		int A1 = 1, A2 = 3;
+		int a1 = 2, a2 = 1;
+		int b1 = 3, b2 = 1;
+		int c1 = 2, c2 = 1;
+		int d1 = 3, d2 = 2;
+		return -((A1 / (1 + pow(((p.x - a1) / b1), 2) + pow(((p.y - c1) / d1), 2))) + (A2 / (1 + pow(((p.x - a2) / b2), 2) + pow(((p.y - c2) / d2), 2))));
 		return 100 * pow((p.y - pow(p.x, 2)), 2) + pow((1 - p.x), 2);
 		//return (4 * pow((p.x - 5), 2)) + pow((p.y - 6), 2);
 		//return 2 * pow(p.x, 2) + p.x*p.y + pow(p.y, 2);
@@ -135,9 +135,9 @@ private:
 			if ((i != _indMax) && (i != _indMin))//находим среднюю точку
 				_indMid = i;
 		}
-		_fMin = result[_indMin];
-		_fMax = result[_indMax];
-		_fMid = result[_indMid];
+		_fMin = Function(_polygon[_indMin]);;
+		_fMax = Function(_polygon[_indMax]);
+		_fMid = Function(_polygon[_indMid]);
 
 	}
 	bool Exit()
@@ -188,7 +188,7 @@ public:
 						continue;
 					}
 					//////////////
-					if((fReflect>_fMin) &&(fReflect<= _fMid))
+					if(fReflect>_fMin &&(fReflect<= _fMid))
 					{
 						_polygon[_indMax] = _reflection;
 						continue;
